@@ -32,6 +32,8 @@ import java.util.ArrayList;
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class ScreenShotService extends Service {
 
+    private String money;
+
     private int mScreenWidth;
     private int mScreenHeight;
     private int mScreenDensity;
@@ -46,7 +48,13 @@ public class ScreenShotService extends Service {
 
     private String TAG = "ScreenShotServiceDebug";
 
+    public String getMoney() {
+        return money;
+    }
 
+    public void setMoney(String money) {
+        this.money = money;
+    }
 
     @Override
     public void onCreate() {
@@ -191,6 +199,7 @@ public class ScreenShotService extends Service {
                 Log.d(TAG,"QR_TEXT"+QR_Text);
                 Intent intent=new Intent();
                 intent.putExtra("Text", QR_Text);
+                intent.putExtra("Money",getMoney());
                 intent.setAction("com.example.wiger.money_qr_code");
                 sendBroadcast(intent);
             }

@@ -33,7 +33,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     private Intent intent;
     private MyReceiver receiver = null;
     public static final int REQUEST_MEDIA_PROJECTION = 2;
-    private List<String> texts = new ArrayList<>();
     private String TAG = "MainActivityDebug";
 
     @Override
@@ -70,11 +69,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
         receiver = new MyReceiver();
         IntentFilter filter=new IntentFilter();
-        filter.addAction("com.example.wiger.money_qr_code" +
-                "" +
-                "" +
-                "" +
-                "");
+        filter.addAction("com.example.wiger.money_qr_code");
         MainActivity.this.registerReceiver(receiver,filter);
     }
 
@@ -147,6 +142,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             String Text = bundle.getString("Text");
+            String Money = bundle.getString("Money");
             String WechatID = bundle.getString("WeChatID");
             if (WechatID != null)
             {
@@ -154,7 +150,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
             }
             if (Text != null)
             {
-                tv_showText.append(Text+"\n");
+                tv_showText.append("￥"+Money+":"+Text+"\n");
             }
         }
     }
