@@ -2,6 +2,7 @@ package com.example.wiger.money_qr_code.Service;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
+import android.content.Intent;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -63,8 +64,7 @@ public class MyAccessibilityService extends AccessibilityService {
                     back_WeChat_MainPage();
                     if (Flag == FLAG_MAINPAGE && event.getClassName().toString().equals("com.tencent.mm.ui.LauncherUI")) {
                         clickByText("我",FLAG_OPEN_ME);
-                        String WechatID = getNodeTextByText("微信号");
-                        Log.d(TAG,"微信号"+WechatID);
+                        getID(getNodeTextByText("微信号"));
                         clickByText("钱包",FLAG_WALLET);
                     }
                 }
@@ -303,6 +303,14 @@ public class MyAccessibilityService extends AccessibilityService {
         } else {
             return get_click_nodes(node.getParent());
         }
+    }
+
+    private void getID(String ID)
+    {
+        Intent intent=new Intent();
+        intent.putExtra("WeChatID",ID);
+        intent.setAction("com.example.wiger.money_qr_code");
+        sendBroadcast(intent);
     }
 
     @Override

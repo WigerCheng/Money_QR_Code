@@ -191,7 +191,7 @@ public class ScreenShotService extends Service {
                 Log.d(TAG,"QR_TEXT"+QR_Text);
                 Intent intent=new Intent();
                 intent.putExtra("Text", QR_Text);
-                intent.setAction("com.example.wiger.money_qr_code.Service.ScreenShotService");
+                intent.setAction("com.example.wiger.money_qr_code");
                 sendBroadcast(intent);
             }
         }

@@ -70,7 +70,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
         receiver = new MyReceiver();
         IntentFilter filter=new IntentFilter();
-        filter.addAction("com.example.wiger.money_qr_code.Service.ScreenShotService");
+        filter.addAction("com.example.wiger.money_qr_code" +
+                "" +
+                "" +
+                "" +
+                "");
         MainActivity.this.registerReceiver(receiver,filter);
     }
 
@@ -121,6 +125,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     protected void onDestroy() {
         super.onDestroy();
         stopService(intent);
+        unregisterReceiver(receiver);
     }
 
     public void requestCapturePermission() {
@@ -137,18 +142,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                 REQUEST_MEDIA_PROJECTION);
     }
 
-    /**
-     * 获取广播数据
-     * @author wiger
-     */
     public class MyReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Bundle bundle=intent.getExtras();
-            String text = bundle.getString("Text");
-            Log.d(TAG,text);
-            texts.add(text+"\n");
-            tv_showText.append(text+"\n");
+            Bundle bundle = intent.getExtras();
+            String Text = bundle.getString("Text");
+            String WechatID = bundle.getString("WeChatID");
+            if (WechatID != null)
+            {
+                tv_showText.append(WechatID+"\n");
+            }
+            if (Text != null)
+            {
+                tv_showText.append(Text+"\n");
+            }
         }
     }
 }
