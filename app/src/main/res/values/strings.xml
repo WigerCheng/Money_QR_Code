@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Money_QR_Code</string>
+    <string name="open_Wechat">打开微信</string>
+    <string name="open_Alipay">打开支付宝</string>
+    <string name="sure">确认</string>
+    <string name="hint_et">请输入你要的金额二维码，以逗号隔开</string>
+    <string name="open_Service">打开服务</string>
+</resources>
