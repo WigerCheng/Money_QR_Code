@@ -24,13 +24,14 @@ public class MyAccessibilityService extends AccessibilityService {
     private String[] myMoneys;
     private int length, i = 0;
     private ScreenShotService screenShotService;
-    private Rect rect_set_money,
-            rect_clear_money;
+    private Rect rect_set_money,rect_clear_money;
+    private boolean isGetAlipayID = false;
+
     private static final int FLAG_FIRST_BOOT = 0;    //启动
     private static final int FLAG_MAINPAGE = 1;    //在主页面
     private static final int FLAG_OPEN_ME = 2;    //打开了我的（我）
-    private static final int FLAG_OPEN_QR_UI = 3;    //进入了绿屏
-    private static final int FLAG_OPEN_QR2_UI = 4;    //进入了黄屏
+    private static final int FLAG_OPEN_QR_UI = 3;    //进入了绿屏(回到首页)
+    private static final int FLAG_OPEN_QR2_UI = 4;    //进入了黄屏(收钱)
     private static final int FLAG_SET_MONEY = 5;    //按下设置金额
     private static final int FLAG_SURE_MONEY = 6;    //设置金额，并返回黄屏
     private static final int FLAG_WALLET = 7;    //微信钱包
@@ -68,11 +69,6 @@ public class MyAccessibilityService extends AccessibilityService {
                         getWechatID(getNodeTextByText("微信号"));
                         clickByText("钱包", FLAG_WALLET);
                     }
-                } else if (Flag == FLAG_MAINPAGE && event.getClassName().toString().equals("com.tencent.mm.ui.LauncherUI")) {
-                    clickByText("我", FLAG_OPEN_ME);
-                    String WechatID = getNodeTextByText("微信号");
-                    Log.d(TAG, "微信号" + WechatID);
-                    clickByText("钱包", FLAG_WALLET);
                 } else if (Flag == FLAG_WALLET && event.getClassName().toString().equals("com.tencent.mm.plugin.mall.ui.MallIndexUI")) {
                     clickByText("收付款", FLAG_OPEN_QR_UI);
                 } else if (Flag == FLAG_OPEN_QR_UI && event.getClassName().toString().equals("com.tencent.mm.plugin.offline.ui.WalletOfflineCoinPurseUI")) {
@@ -97,20 +93,29 @@ public class MyAccessibilityService extends AccessibilityService {
             }
             //Alipay
             else if (packageName.equals("com.eg.android.AlipayGphone")) {
-                if (Flag == FLAG_FIRST_BOOT) {
+                if (Flag == FLAG_FIRST_BOOT ) {
                     back_Alipay_MainPage(event);
                     if (Flag == FLAG_MAINPAGE && event.getClassName().toString().equals("com.eg.android.AlipayGphone.AlipayLogin")) {
-                        clickByText("我的");
+                        if (!isGetAlipayID){
+                            clickAlipayMe();
+                            if (Flag == FLAG_OPEN_ME && event.getClassName().toString().equals("com.eg.android.AlipayGphone.AlipayLogin")){
+                                clickByText("******",FLAG_PERSONAL_INFORMATION);
+                            }
+                        }
                     }
-//                        clickById("com.alipay.android.phone.wealth.home:id/userinfo_view",FLAG_OPEN_ME);
-//                        clickByText("收钱", FLAG_OPEN_QR2_UI);
-//                    }
-                } else if (Flag == FLAG_OPEN_ME && event.getClassName().toString().equals("com.alipay.mobile.security.personcenter.PersonCenterActivity")) {
-                    clickByText("个人主页", FLAG_PERSONAL_INFORMATION);
-                } else if (Flag == FLAG_PERSONAL_INFORMATION && event.getClassName().toString().equals("com.alipay.android.phone.wallet.profileapp.ui.ProfileActivity_")) {
-                    //TODO：支付宝账户
-                    Log.d(TAG, "ALIPAYACCOUNT");
+                }else if (is_Alipay_MainPage(event) && isGetAlipayID){
+                    clickByText("首页",FLAG_OPEN_QR_UI);
+                    clickByText("收钱",FLAG_OPEN_QR2_UI);
+                } else if (Flag == FLAG_PERSONAL_INFORMATION && event.getClassName().toString().equals("com.alipay.mobile.security.personcenter.PersonCenterActivity")) {
+                    clickByText("个人主页", FLAG_PERSONAL_HOME);
+                } else if (Flag == FLAG_PERSONAL_HOME && event.getClassName().toString().equals("com.alipay.android.phone.wallet.profileapp.ui.ProfileActivity_")) {
+                    getAlipayID();
+                    back_Alipay_MainPage(event);
+                } else if (Flag == FLAG_PERSONAL_HOME)
+                {
+                    back_Alipay_MainPage(event);
                 }
+
             }
         } else if (eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
 //            Log.d(TAG, "I" + String.valueOf(i));
@@ -120,10 +125,14 @@ public class MyAccessibilityService extends AccessibilityService {
             //Alipay
             if (packageName.equals("com.eg.android.AlipayGphone")) {
                 if (Flag == FLAG_MAINPAGE && event.getClassName().toString().equals("com.eg.android.AlipayGphone.AlipayLogin")) {
-                    clickByText("我的");
-                    clickById("com.alipay.android.phone.wealth.home:id/userinfo_view", FLAG_OPEN_ME);
-//                        clickByText("收钱", FLAG_OPEN_QR2_UI);
-                } else if (event.getClassName().toString().equals("android.widget.FrameLayout") && Flag == FLAG_OPEN_QR2_UI) {
+                    clickAlipayMe();
+                    if (Flag == FLAG_OPEN_ME && event.getClassName().toString().equals("com.eg.android.AlipayGphone.AlipayLogin")){
+                        clickByText("******",FLAG_PERSONAL_INFORMATION);
+                    }
+                }else if (Flag == FLAG_OPEN_ME && event.getClassName().toString().equals("com.eg.android.AlipayGphone.AlipayLogin")){
+                    clickByText("******",FLAG_PERSONAL_INFORMATION);
+                }
+                else if (event.getClassName().toString().equals("android.widget.FrameLayout") && Flag == FLAG_OPEN_QR2_UI) {
                     if (i != length) {
                         clickByText("设置金额", FLAG_SET_MONEY);
                     }
@@ -232,23 +241,19 @@ public class MyAccessibilityService extends AccessibilityService {
         this.Flag = Flag;
     }
 
-    public void clickById(String id) {
+    public void clickAlipayMe(){
         AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
         if (nodeInfo == null) {
             return;
         }
-        List<AccessibilityNodeInfo> nodes = nodeInfo.findAccessibilityNodeInfosByViewId(id);
-        Log.d(TAG, id + String.valueOf(nodes.size()));
-        AccessibilityNodeInfo node;
-        for (int i = 0; i < nodes.size(); i++) {
-            node = get_click_nodes(nodes.get(i));
-            if (node != null) {
-                node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-            }
-        }
+        List<AccessibilityNodeInfo> nodes_Text = nodeInfo.findAccessibilityNodeInfosByText("我的");
+        AccessibilityNodeInfo node_Text;
+        node_Text = get_click_nodes(nodes_Text.get(nodes_Text.size()-1));
+        node_Text.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+        this.Flag = FLAG_OPEN_ME;
     }
 
-    public void clickByText(String text, int Flag) {
+    public void clickByText(String text,int Flag) {
         AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
         if (nodeInfo == null) {
             return;
@@ -265,22 +270,6 @@ public class MyAccessibilityService extends AccessibilityService {
         this.Flag = Flag;
     }
 
-    public void clickByText(String text) {
-        AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
-        if (nodeInfo == null) {
-            return;
-        }
-        List<AccessibilityNodeInfo> nodes = nodeInfo.findAccessibilityNodeInfosByText(text);
-        Log.d(TAG, text + String.valueOf(nodes.size()));
-        AccessibilityNodeInfo node;
-        for (int i = 0; i < nodes.size(); i++) {
-            node = get_click_nodes(nodes.get(i));
-            if (node != null) {
-                node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-            }
-        }
-    }
-
     public String getNodeTextByText(String text) {
         String nodeText = null;
         AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
@@ -294,7 +283,6 @@ public class MyAccessibilityService extends AccessibilityService {
         }
         return nodeText;
     }
-
 
     public boolean is_Alipay_MainPage(AccessibilityEvent event) {
         boolean is_Main = false;
@@ -348,9 +336,6 @@ public class MyAccessibilityService extends AccessibilityService {
         }
     }
 
-    /*
-        儿子能点返回儿子，儿子不能点，判断父母，父母能点返回父母，不能点返回null
-     */
     public AccessibilityNodeInfo get_click_nodes(AccessibilityNodeInfo node) {
         if (node.isClickable()) {
             return node;
@@ -372,7 +357,21 @@ public class MyAccessibilityService extends AccessibilityService {
     }
 
     private void getAlipayID() {
-
+        AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
+        if(nodeInfo == null)
+        {
+            return;
+        }
+        List<AccessibilityNodeInfo> nodes = nodeInfo.findAccessibilityNodeInfosByText("支付宝账户");
+        AccessibilityNodeInfo node,node_ID;
+        node = nodes.get(0);
+        node_ID = node.getParent().getChild(1);
+        String AlipayID = node_ID.getText().toString();
+        Intent intent = new Intent();
+        intent.putExtra("AlipayID", AlipayID);
+        intent.setAction("com.example.wiger.money_qr_code");
+        sendBroadcast(intent);
+        isGetAlipayID = true;
     }
 
     @Override
