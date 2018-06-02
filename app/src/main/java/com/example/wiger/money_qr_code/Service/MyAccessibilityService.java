@@ -63,7 +63,7 @@ public class MyAccessibilityService extends AccessibilityService {
             //Wechat
             if (packageName.equals("com.tencent.mm")) {
                 if (Flag == FLAG_FIRST_BOOT) {
-                    back_WeChat_MainPage();
+                    back_MainPage();
                     if (Flag == FLAG_MAINPAGE && event.getClassName().toString().equals("com.tencent.mm.ui.LauncherUI")) {
                         clickByText("我", FLAG_OPEN_ME);
                         getWechatID(getNodeTextByText("微信号"));
@@ -94,7 +94,7 @@ public class MyAccessibilityService extends AccessibilityService {
             //Alipay
             else if (packageName.equals("com.eg.android.AlipayGphone")) {
                 if (Flag == FLAG_FIRST_BOOT ) {
-                    back_Alipay_MainPage(event);
+                    back_MainPage();
                     if (Flag == FLAG_MAINPAGE && event.getClassName().toString().equals("com.eg.android.AlipayGphone.AlipayLogin")) {
                         if (!isGetAlipayID){
                             clickAlipayMe();
@@ -103,17 +103,17 @@ public class MyAccessibilityService extends AccessibilityService {
                             }
                         }
                     }
-                }else if (is_Alipay_MainPage(event) && isGetAlipayID){
+                }else if (isGetAlipayID){
                     clickByText("首页",FLAG_OPEN_QR_UI);
                     clickByText("收钱",FLAG_OPEN_QR2_UI);
                 } else if (Flag == FLAG_PERSONAL_INFORMATION && event.getClassName().toString().equals("com.alipay.mobile.security.personcenter.PersonCenterActivity")) {
                     clickByText("个人主页", FLAG_PERSONAL_HOME);
                 } else if (Flag == FLAG_PERSONAL_HOME && event.getClassName().toString().equals("com.alipay.android.phone.wallet.profileapp.ui.ProfileActivity_")) {
                     getAlipayID();
-                    back_Alipay_MainPage(event);
+                    back_MainPage();
                 } else if (Flag == FLAG_PERSONAL_HOME)
                 {
-                    back_Alipay_MainPage(event);
+                    back_MainPage();
                 }
 
             }
@@ -284,56 +284,37 @@ public class MyAccessibilityService extends AccessibilityService {
         return nodeText;
     }
 
-    public boolean is_Alipay_MainPage(AccessibilityEvent event) {
-        boolean is_Main = false;
-        if (event.getClassName().toString().equals("com.eg.android.AlipayGphone.AlipayLogin")) {
-            is_Main = true;
-        }
-        return is_Main;
-    }
 
-    public void back_Alipay_MainPage(AccessibilityEvent event) {
-        if (event != null) {
-            if (is_Alipay_MainPage(event)) {
-                Flag = FLAG_MAINPAGE;
-            } else {
-                Log.d(TAG, "NODES:不是主页面");
-                this.performGlobalAction(GLOBAL_ACTION_BACK);
-            }
-        }
-    }
-
-    public boolean is_WeChat_MainPage(List<AccessibilityNodeInfo> nodes) {
-        boolean is_Main = false;
-        if (nodes.size() == 0) {
-            Log.d(TAG, "NODES:主页面");
-            is_Main = true;
-        }
-        return is_Main;
-    }
-
-    //通过有没有返回ID，判断是否在主页面
-    public void back_WeChat_MainPage() {
+    public void back_MainPage(){
         AccessibilityNodeInfo active_window = getRootInActiveWindow();
-        if (active_window != null) {
-            List<AccessibilityNodeInfo> nodes = new ArrayList<>();
-            nodes.addAll(getRootInActiveWindow().findAccessibilityNodeInfosByViewId("com.tencent.mm:id/hx"));
-            nodes.addAll(getRootInActiveWindow().findAccessibilityNodeInfosByViewId("com.tencent.mm:id/hi"));
-            nodes.addAll(getRootInActiveWindow().findAccessibilityNodeInfosByViewId("com.tencent.mm:id/c29"));
-            Log.d(TAG, String.valueOf(nodes.size()));
-            if (is_WeChat_MainPage(nodes)) {
+        if (active_window!=null){
+            List<AccessibilityNodeInfo> nodes = active_window.findAccessibilityNodeInfosByText("返回");
+            if (is_MainPage(nodes)) {
                 Flag = FLAG_MAINPAGE;
             } else {
                 Log.d(TAG, "NODES:不是主页面");
                 AccessibilityNodeInfo node;
                 for (int i = 0; i < nodes.size(); i++) {
-                    if (!is_WeChat_MainPage(nodes)) {
+                    if (!is_MainPage(nodes)) {
                         node = get_click_nodes(nodes.get(i));
                         node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     }
                 }
             }
         }
+    }
+
+    //改用通过判断节点是否有返回的描述确定是不是主页
+    public boolean is_MainPage(List<AccessibilityNodeInfo> nodes){
+        boolean is_Main = true;
+        for (AccessibilityNodeInfo node:nodes){
+            String desc = String.valueOf(node.getContentDescription());
+            if ("返回".equals(desc)){
+                is_Main = false;
+                break;
+            }
+        }
+        return is_Main;
     }
 
     public AccessibilityNodeInfo get_click_nodes(AccessibilityNodeInfo node) {
