@@ -144,9 +144,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
             String Text = bundle.getString("Text");
             String Money = bundle.getString("Money");
             String WechatID = bundle.getString("WeChatID");
+            String AlipayID = bundle.getString("AlipayID");
             if (WechatID != null)
             {
-                tv_showText.append(WechatID+"\n");
+                tv_showText.append("微信号"+WechatID+"\n");
+            }
+            if (AlipayID != null)
+            {
+                tv_showText.append("支付宝号:"+AlipayID+"\n");
             }
             if (Text != null)
             {
