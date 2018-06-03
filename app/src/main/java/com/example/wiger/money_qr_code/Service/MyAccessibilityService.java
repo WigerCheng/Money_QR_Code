@@ -185,17 +185,10 @@ public class MyAccessibilityService extends AccessibilityService {
         if (nodeInfo == null) {
             return;
         }
-        List<AccessibilityNodeInfo> nodes = nodeInfo.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/bt");
-        nodes.addAll(nodeInfo.findAccessibilityNodeInfosByViewId("com.alipay.mobile.ui:id/content"));
-        Log.d(TAG, "NODE:" + nodes.size());
-        AccessibilityNodeInfo node;
-        for (int i = 0; i < nodes.size(); i++) {
-            node = get_click_nodes(nodes.get(i));
-            Bundle arguments = new Bundle();
-            arguments.putCharSequence(
-                    AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, money);
-            node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
-        }
+        AccessibilityNodeInfo node = getNodeByClassname("android.widget.EditText");
+        Bundle arguments = new Bundle();
+        arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, money);
+        node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
         if (packageName.equals("com.tencent.mm")) {
             clickById("com.tencent.mm:id/ak_", FLAG_SURE_MONEY);
         } else if (packageName.equals("com.eg.android.AlipayGphone")) {
@@ -270,6 +263,31 @@ public class MyAccessibilityService extends AccessibilityService {
         this.Flag = Flag;
     }
 
+    public AccessibilityNodeInfo getNodeByClassname(String className){
+        AccessibilityNodeInfo active_Window = getRootInActiveWindow();
+        AccessibilityNodeInfo nodeInfo = null;
+        List<AccessibilityNodeInfo> nodes = new ArrayList<>();
+        recycleNode(active_Window,nodes);
+        for (AccessibilityNodeInfo node:nodes){
+            if (className.equals(node.getClassName().toString())){
+                nodeInfo = node;
+            }
+        }
+        return nodeInfo;
+    }
+
+    private void recycleNode(AccessibilityNodeInfo node,List<AccessibilityNodeInfo> nodes){
+        int childNum =  node.getChildCount();
+        if (childNum==0)
+        {
+            nodes.add(node);
+        }else {
+            for (int i = 0;i < childNum;i++){
+                recycleNode(node.getChild(i),nodes);
+            }
+        }
+    }
+
     public String getNodeTextByText(String text) {
         String nodeText = null;
         AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
@@ -292,7 +310,6 @@ public class MyAccessibilityService extends AccessibilityService {
             if (is_MainPage(nodes)) {
                 Flag = FLAG_MAINPAGE;
             } else {
-                Log.d(TAG, "NODES:不是主页面");
                 AccessibilityNodeInfo node;
                 for (int i = 0; i < nodes.size(); i++) {
                     if (!is_MainPage(nodes)) {
