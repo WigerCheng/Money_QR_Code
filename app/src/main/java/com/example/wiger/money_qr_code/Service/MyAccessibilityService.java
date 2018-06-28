@@ -186,11 +186,7 @@ public class MyAccessibilityService extends AccessibilityService {
         Bundle arguments = new Bundle();
         arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, money);
         node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
-        if (packageName.equals("com.tencent.mm")) {
-            clickById("com.tencent.mm:id/ak_", FLAG_SURE_MONEY);
-        } else if (packageName.equals("com.eg.android.AlipayGphone")) {
-            clickById("com.alipay.mobile.payee:id/payee_NextBtn", FLAG_SURE_MONEY);
-        }
+        clickByText("确定",FLAG_SURE_MONEY);
     }
 
     @Override
