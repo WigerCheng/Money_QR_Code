@@ -147,11 +147,12 @@ public class MyAccessibilityService extends AccessibilityService {
                     if (i < length) {
                         i++;
                     }
-                } else if (event.getClassName().toString().equals("android.widget.RelativeLayout") && Flag == FLAG_SURE_MONEY) {
+                } else if (Flag == FLAG_SURE_MONEY) {
                     screenShotService.startScreenShot();
                     clickByText("清除金额", FLAG_OPEN_QR2_UI);
                 }
             }
+//event.getClassName().toString().equals("android.widget.RelativeLayout") &&
             //Wechat
             else if (packageName.equals("com.tencent.mm")) {
                 if (event.getClassName().toString().equals("android.widget.ListView") && Flag == FLAG_OPEN_QR2_UI) {
