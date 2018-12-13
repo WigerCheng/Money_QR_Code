@@ -27,7 +27,7 @@ public class MyAccessibilityService extends AccessibilityService {
     private Rect rect_set_money, rect_clear_money;
     private boolean isGetAlipayID = false;
 
-    private static final long SLEEP_TIME = 1000;
+    private static final long SLEEP_TIME = 500;
     private static final int FLAG_FIRST_BOOT = 0;    //启动
     private static final int FLAG_MAINPAGE = 1;    //在主页面
     private static final int FLAG_OPEN_ME = 2;    //打开了我的（我）
@@ -62,7 +62,6 @@ public class MyAccessibilityService extends AccessibilityService {
                     if (Flag == FLAG_MAINPAGE) {
                         clickByText("我", FLAG_OPEN_ME);
                         getWechatID(getNodeTextByText("微信号"));
-                        sleep(SLEEP_TIME);
                         clickByText("钱包", FLAG_WALLET);
                     }
                 } else if (Flag == FLAG_WALLET && event.getClassName().toString().equals("com.tencent.mm.plugin.mall.ui.MallIndexUI")) {
@@ -94,7 +93,6 @@ public class MyAccessibilityService extends AccessibilityService {
                     if (Flag == FLAG_MAINPAGE) {
                         if (!isGetAlipayID) {
                             clickAlipayMe();
-                            sleep(SLEEP_TIME);
                             if (Flag == FLAG_OPEN_ME) {
                                 clickByText("******", FLAG_PERSONAL_INFORMATION);
                             }
@@ -102,12 +100,10 @@ public class MyAccessibilityService extends AccessibilityService {
                     }
                 } else if (Flag == FLAG_MAINPAGE) {
                     if (isGetAlipayID) {
-                        sleep(1000);
                         clickByText("首页", FLAG_OPEN_QR_UI);
                         clickByText("收钱", FLAG_OPEN_QR2_UI);
                     }else {
                         clickAlipayMe();
-                        sleep(SLEEP_TIME);
                         if (Flag == FLAG_OPEN_ME) {
                             clickByText("******", FLAG_PERSONAL_INFORMATION);
                         }
@@ -141,6 +137,7 @@ public class MyAccessibilityService extends AccessibilityService {
                         return;
                     }
                     if (i != length) {
+                        Log.d(TAG, "onAccessibilityEvent: "+myMoneys[i]);
                         setMoney(myMoneys[i]);
                         screenShotService.setMoney(myMoneys[i]);
                     }
@@ -152,7 +149,6 @@ public class MyAccessibilityService extends AccessibilityService {
                     clickByText("清除金额", FLAG_OPEN_QR2_UI);
                 }
             }
-//event.getClassName().toString().equals("android.widget.RelativeLayout") &&
             //Wechat
             else if (packageName.equals("com.tencent.mm")) {
                 if (event.getClassName().toString().equals("android.widget.ListView") && Flag == FLAG_OPEN_QR2_UI) {
@@ -179,6 +175,7 @@ public class MyAccessibilityService extends AccessibilityService {
     }
 
     public void setMoney(String money) {
+        sleep(SLEEP_TIME);
         AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
         if (nodeInfo == null) {
             return;
@@ -241,6 +238,7 @@ public class MyAccessibilityService extends AccessibilityService {
     }
 
     public void clickByText(String text, int Flag) {
+        sleep(SLEEP_TIME);
         AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
         if (nodeInfo == null) {
             return;
